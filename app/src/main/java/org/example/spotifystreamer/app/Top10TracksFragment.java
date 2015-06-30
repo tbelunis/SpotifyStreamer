@@ -7,11 +7,13 @@ package org.example.spotifystreamer.app;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,7 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
+import retrofit.RetrofitError;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -184,6 +187,7 @@ public class Top10TracksFragment extends Fragment {
         @Override
         protected Tracks doInBackground(String... params) {
             String spotifyId = params[0];
+            Log.d(TAG, "Retrieving tracks for " + spotifyId);
             HashMap<String, Object> queryParams = new HashMap<String, Object>();
             SpotifyApi spotifyApi = new SpotifyApi();
 
@@ -191,7 +195,21 @@ public class Top10TracksFragment extends Fragment {
             SpotifyService spotify = spotifyApi.getService();
             queryParams.put(SpotifyService.COUNTRY, "US");
 
-            return spotify.getArtistTopTrack(spotifyId, queryParams);
+            Tracks tracks = null;
+            try {
+                tracks = spotify.getArtistTopTrack(spotifyId, queryParams);
+            } catch (RetrofitError e) {
+                Log.e(TAG, e.getLocalizedMessage());
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(),
+                                getActivity().getResources().getString(R.string.network_problem_detected),
+                                Toast.LENGTH_SHORT);
+                    }
+                });
+            }
+            return tracks;
         }
 
         // If no tracks are returned display a Toast message to the user.
@@ -199,7 +217,9 @@ public class Top10TracksFragment extends Fragment {
         @Override
         protected void onPostExecute(Tracks tracks) {
             if (tracks == null || tracks.tracks.isEmpty()) {
-                Toast.makeText(getActivity(), "There were no tracks found for " + mArtistName, Toast.LENGTH_SHORT).show();
+                Resources resources = getActivity().getResources();
+                String message = String.format(resources.getString(R.string.no_tracks_found), mArtistName);
+                Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
             } else {
                 loadTop10Tracks(tracks);
             }

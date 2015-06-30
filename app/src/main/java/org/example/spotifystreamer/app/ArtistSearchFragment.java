@@ -7,6 +7,7 @@ package org.example.spotifystreamer.app;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,6 +28,7 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Pager;
+import retrofit.RetrofitError;
 
 import java.util.ArrayList;
 
@@ -217,14 +219,27 @@ public class ArtistSearchFragment extends Fragment implements TextView.OnEditorA
         protected ArtistsPager doInBackground(String... params) {
             Log.d(TAG, "Running search with search term " + params[0]);
             mSearchTerm = params[0];
+            ArtistsPager artistPager = null;
             if (mSearchTerm != null && !mSearchTerm.isEmpty()) {
                 SpotifyApi spotifyApi = new SpotifyApi();
                 SpotifyService spotify = spotifyApi.getService();
-                return spotify.searchArtists(mSearchTerm);
-            } else {
-                return null;
+                try {
+                    artistPager = spotify.searchArtists(mSearchTerm);
+                } catch (RetrofitError e) {
+                    Log.e(TAG, e.getLocalizedMessage());
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(),
+                                    getActivity().getResources().getString(R.string.network_problem_detected),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             }
+            return artistPager;
         }
+
 
         /**
          * If the search returns no results, display a Toast message to the user.
@@ -235,7 +250,9 @@ public class ArtistSearchFragment extends Fragment implements TextView.OnEditorA
         protected void onPostExecute(ArtistsPager artistsPager) {
             if (artistsPager == null || artistsPager.artists.items.isEmpty()) {
                 Context context = getActivity();
-                Toast.makeText(context, "The artist was not found", Toast.LENGTH_SHORT).show();
+                Resources resources = getActivity().getResources();
+                String message = String.format(resources.getString(R.string.no_search_results), mSearchTerm);
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
             } else {
                 loadArtistSearchResults(artistsPager);
             }
