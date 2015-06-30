@@ -1,5 +1,8 @@
-package org.example.spotifystreamer.app;
+/*
+ * Copyright (C) 2015 Tom Belunis
+ */
 
+package org.example.spotifystreamer.app;
 
 import android.os.Parcel;
 import android.os.Parcelable;

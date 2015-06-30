@@ -10,9 +10,9 @@
         android:id="@+id/artist_list_item_imageview"
         android:layout_width="@dimen/image_width"
         android:layout_height="@dimen/image_width"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"/>
+        android:layout_marginLeft="@dimen/list_item_margin_left"
+        android:layout_marginTop="@dimen/list_item_image_margin_top"
+        android:layout_marginBottom="@dimen/list_item_image_margin_bottom"/>
 
     <TextView
         android:id="@+id/artist_list_item_artist_name"
@@ -20,12 +20,11 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/artist_list_item_imageview"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="10dp"
-        android:text="Artist"/>
+        android:layout_marginLeft="@dimen/list_item_margin_left"/>
 
     <View
         android:id="@+id/divider"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="@dimen/divider_height"
         android:background="@color/holo_gray_light"/>
 </RelativeLayout>

@@ -1,15 +1,31 @@
+/*
+ * Copyright (C) 2015 Tom Belunis
+ */
+
 package org.example.spotifystreamer.app;
+
 import kaaes.spotify.webapi.android.models.Image;
 
 import java.util.List;
 
-public class SpotifyImageHandler {
+/**
+ * Chooses the URL desired image from the list of images returned
+ * in the Spotify searches
+ */
+class SpotifyImagePicker {
     private List<Image> mImages;
 
-    public SpotifyImageHandler(List<Image> images) {
+    public SpotifyImagePicker(List<Image> images) {
         mImages = images;
     }
 
+    /**
+     * The images returned by Spotify are in descending order by width
+     * the thumbnail image will be the smallest image. Find the smallest image
+     * width and return the URL.
+     *
+     * @return url of the thumbnail image
+     */
     public String getArtistThumbnailUrl() {
         String imageUrl = null;
 
@@ -20,7 +36,14 @@ public class SpotifyImageHandler {
         return imageUrl;
     }
 
-    public String getImageForSize(int pixels) {
+    /**
+     * Return the URL for the image that is closest to the desired width
+     * in widthInPixels.
+     *
+     * @param widthInPixels desired width in pixels for the image
+     * @return url of image closest to desired width
+     */
+    public String getImageForSize(int widthInPixels) {
         String imageUrl = null;
         int difference = Integer.MAX_VALUE;
 
@@ -28,9 +51,9 @@ public class SpotifyImageHandler {
             for (Image image : mImages) {
                 if (imageUrl == null) {
                     imageUrl = image.url;
-                    difference = image.width - pixels;
+                    difference = image.width - widthInPixels;
                 } else {
-                    int newDifference = image.width - pixels;
+                    int newDifference = image.width - widthInPixels;
                     if (newDifference < difference) {
                         imageUrl = image.url;
                         difference = newDifference;

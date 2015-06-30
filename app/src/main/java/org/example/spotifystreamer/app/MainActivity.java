@@ -1,38 +1,37 @@
+/*
+ * Copyright (C) 2015 Tom Belunis
+ */
 package org.example.spotifystreamer.app;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.RecyclerView;
-import android.view.View;
 
-import java.util.ArrayList;
-
-
-public class MainActivity extends ActionBarActivity implements View.OnClickListener {
+/**
+ * Main entry point to the app. Displays the artist search fragment
+ */
+public class MainActivity extends ActionBarActivity {
     private final String TAG = this.getClass().getSimpleName();
-    private final String FRAGMENT_TAG = "ArtistListFragment";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Check to see if the fragment already exists. If it does, use it.
         FragmentManager fm = getFragmentManager();
-        ArtistListFragment fragment = new ArtistListFragment();
-        FragmentTransaction ft = fm.beginTransaction();
-//        fragment.setRetainInstance(true);
-        ft.replace(R.id.activity_main_fragment_container, fragment, FRAGMENT_TAG);
-        ft.commit();
-    }
+        String SEARCH_FRAGMENT = "ArtistSearchFragment";
+        ArtistSearchFragment artistSearchFragment = (ArtistSearchFragment) fm.findFragmentByTag(SEARCH_FRAGMENT);
 
-    @Override
-    public void onClick(View view) {
-        Intent intent = new Intent(this, Top10TracksActivity.class);
-        intent.putExtra(Constants.SPOTIFY_ID, view.getTag().toString());
-        startActivity(intent);
+        // If the fragment doesn't exist, create a new one and replace the
+        // fragment container with the fragment.
+        if (artistSearchFragment == null) {
+            artistSearchFragment = new ArtistSearchFragment();
+            artistSearchFragment.setRetainInstance(true);
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.replace(R.id.activity_main_fragment_container, artistSearchFragment, SEARCH_FRAGMENT);
+            ft.commit();
+        }
     }
-
 }
