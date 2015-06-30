@@ -1,87 +1,38 @@
 package org.example.spotifystreamer.app;
 
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Context;
-import android.support.v7.app.ActionBarActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.RecyclerView;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
-import android.view.*;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import com.squareup.picasso.Picasso;
+import android.view.View;
 
 import java.util.ArrayList;
 
 
-public class MainActivity extends ActionBarActivity implements TextView.OnEditorActionListener {
+public class MainActivity extends ActionBarActivity implements View.OnClickListener {
     private final String TAG = this.getClass().getSimpleName();
+    private final String FRAGMENT_TAG = "ArtistListFragment";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        EditText searchQueryText = (EditText) findViewById(R.id.search_text);
-        searchQueryText.setOnEditorActionListener(this);
+        FragmentManager fm = getFragmentManager();
+        ArtistListFragment fragment = new ArtistListFragment();
+        FragmentTransaction ft = fm.beginTransaction();
+//        fragment.setRetainInstance(true);
+        ft.replace(R.id.activity_main_fragment_container, fragment, FRAGMENT_TAG);
+        ft.commit();
     }
 
     @Override
-    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        if (actionId == EditorInfo.IME_ACTION_DONE) {
-            Log.d(TAG, "The search text is " + v.getText());
-            return false;
-        }
-        return false;
+    public void onClick(View view) {
+        Intent intent = new Intent(this, Top10TracksActivity.class);
+        intent.putExtra(Constants.SPOTIFY_ID, view.getTag().toString());
+        startActivity(intent);
     }
 
-    private class ArtistSearchResultsAdapter extends RecyclerView.Adapter<ArtistSearchResultViewHolder> {
-        private ArrayList<ArtistSearchResult> results;
-        private Context context;
-
-        public ArtistSearchResultsAdapter(Context context, ArrayList<ArtistSearchResult> results) {
-            this.context = context;
-            this.results = results;
-        }
-
-        @Override
-        public ArtistSearchResultViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-            View view = getLayoutInflater().inflate(R.layout.artist_search_list_item, viewGroup, false);
-            return new ArtistSearchResultViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(ArtistSearchResultViewHolder artistSearchResultViewHolder, int i) {
-            ArtistSearchResult result = results.get(i);
-            String artistName = result.getArtistName();
-            String imageUrl = result.getImageUrl();
-
-            artistSearchResultViewHolder.artistName.setText(artistName);
-
-            if (imageUrl != null) {
-                Picasso.with(context).load(imageUrl).into(artistSearchResultViewHolder.artistImage);
-            }
-
-        }
-
-        @Override
-        public int getItemCount() {
-            return results.size();
-        }
-    }
-
-    private class ArtistSearchResultViewHolder extends RecyclerView.ViewHolder {
-        private ImageView artistImage;
-        private TextView artistName;
-
-        public ArtistSearchResultViewHolder(View itemView) {
-            super(itemView);
-            artistImage = (ImageView)itemView.findViewById(R.id.artist_list_item_imageview);
-            artistName = (TextView)itemView.findViewById(R.id.artist_list_item_artist_name);
-        }
-    }
 }
