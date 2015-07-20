@@ -52,9 +52,12 @@ class SpotifyImagePicker {
                 if (imageUrl == null) {
                     imageUrl = image.url;
                     difference = image.width - widthInPixels;
+                    if (difference == 0) {
+                        break;
+                    }
                 } else {
                     int newDifference = image.width - widthInPixels;
-                    if (newDifference < difference) {
+                    if (newDifference > 0 && newDifference < difference) {
                         imageUrl = image.url;
                         difference = newDifference;
                     }

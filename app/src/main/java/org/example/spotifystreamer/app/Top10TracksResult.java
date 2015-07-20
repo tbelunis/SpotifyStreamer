@@ -8,12 +8,16 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Top10TracksResult implements Parcelable {
+    private String mArtistName;
+    private String mListItemImageUrl;
     private String mImageUrl;
     private String mAlbumTitle;
     private String mTrackTitle;
     private String mPreviewUrl;
 
-    public Top10TracksResult(String imageUrl, String albumTitle, String trackTitle, String previewUrl) {
+    public Top10TracksResult(String artistName, String listItemImageUrl, String imageUrl, String albumTitle, String trackTitle, String previewUrl) {
+        mArtistName = artistName;
+        mListItemImageUrl = listItemImageUrl;
         mImageUrl = imageUrl;
         mAlbumTitle = albumTitle;
         mTrackTitle = trackTitle;
@@ -21,6 +25,8 @@ public class Top10TracksResult implements Parcelable {
     }
 
     private Top10TracksResult(Parcel parcel) {
+        mArtistName = parcel.readString();
+        mListItemImageUrl = parcel.readString();
         mImageUrl = parcel.readString();
         mAlbumTitle = parcel.readString();
         mTrackTitle = parcel.readString();
@@ -29,6 +35,8 @@ public class Top10TracksResult implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
+        out.writeString(mArtistName);
+        out.writeString(mListItemImageUrl);
         out.writeString(mImageUrl);
         out.writeString(mAlbumTitle);
         out.writeString(mTrackTitle);
@@ -56,7 +64,13 @@ public class Top10TracksResult implements Parcelable {
         };
     }
 
+    public String getArtistName() {
+        return mArtistName;
+    }
 
+    public String getListItemImageUrl() {
+        return mListItemImageUrl;
+    }
 
     public String getImageUrl() {
         return mImageUrl;

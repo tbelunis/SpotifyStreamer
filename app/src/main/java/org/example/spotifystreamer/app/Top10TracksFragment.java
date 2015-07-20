@@ -36,9 +36,10 @@ import java.util.HashMap;
  */
 public class Top10TracksFragment extends Fragment {
     private static final int WIDTH_IN_PIXELS_FOR_LIST = 200;
+    private static final int WIDTH_IN_PIXELS_FOR_PLAYER = 640;
     private final String TAG = this.getClass().getSimpleName();
     private Top10TracksAdapter mAdapter;
-    private ArrayList<Top10TracksResult> mResults = new ArrayList<Top10TracksResult>();
+    private ArrayList<Top10TracksResult> mResults = new ArrayList<>();
     private String mSpotifyId;
     private String mArtistName;
 
@@ -54,18 +55,19 @@ public class Top10TracksFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        RecyclerView recyclerView;
-        recyclerView = (RecyclerView) getView().findViewById(R.id.track_list_recyclerview);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        RecyclerView recyclerView = (RecyclerView) getView().findViewById(R.id.track_list_recyclerview);
+        if (recyclerView != null) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        mAdapter = new Top10TracksAdapter(getActivity());
-        recyclerView.setAdapter(mAdapter);
+            mAdapter = new Top10TracksAdapter(getActivity());
+            recyclerView.setAdapter(mAdapter);
 
-        /**
-         * Start the task to retrieve the top 10 tracks.
-         */
-        Top10TracksTask task = new Top10TracksTask();
-        task.execute(mSpotifyId);
+            /**
+             * Start the task to retrieve the top 10 tracks.
+             */
+            Top10TracksTask task = new Top10TracksTask();
+            task.execute(mSpotifyId);
+        }
 
     }
 
@@ -111,12 +113,13 @@ public class Top10TracksFragment extends Fragment {
         mResults.clear();
         for (Track track : tracks.tracks) {
             SpotifyImagePicker imageHandler = new SpotifyImagePicker(track.album.images);
-            String imageUrl = imageHandler.getImageForSize(WIDTH_IN_PIXELS_FOR_LIST);
+            String listItemImageUrl = imageHandler.getImageForSize(WIDTH_IN_PIXELS_FOR_LIST);
+            String imageUrl = imageHandler.getImageForSize(WIDTH_IN_PIXELS_FOR_PLAYER);
             String albumTitle = track.album.name;
             String trackTitle = track.name;
             String previewUrl = track.preview_url;
 
-            Top10TracksResult result = new Top10TracksResult(imageUrl, albumTitle, trackTitle, previewUrl);
+            Top10TracksResult result = new Top10TracksResult(mArtistName, listItemImageUrl, imageUrl, albumTitle, trackTitle, previewUrl);
             mResults.add(result);
         }
         mAdapter.notifyDataSetChanged();
@@ -143,10 +146,10 @@ public class Top10TracksFragment extends Fragment {
 
             // Place the previewUrl in the tag so it is available when the
             // user clicks on a list item.
-            holder.itemView.setTag(result.getPreviewUrl());
+            holder.itemView.setTag(position);
 
             Picasso.with(mContext)
-                    .load(result.getImageUrl())
+                    .load(result.getListItemImageUrl())
                     .fit()
                     .into(holder.mAlbumImage);
         }
@@ -172,7 +175,10 @@ public class Top10TracksFragment extends Fragment {
 
         @Override
         public void onClick(View view) {
-            // Do nothing for now, will play the preview in Version 2
+            Intent intent = new Intent(getActivity(), TrackPlayerActivity.class);
+            intent.putExtra(Constants.TRACK_TO_PLAY, Integer.parseInt(view.getTag().toString()));
+            intent.putExtra(Constants.TRACKS, mResults);
+            startActivity(intent);
         }
     }
 
@@ -188,7 +194,7 @@ public class Top10TracksFragment extends Fragment {
         protected Tracks doInBackground(String... params) {
             String spotifyId = params[0];
             Log.d(TAG, "Retrieving tracks for " + spotifyId);
-            HashMap<String, Object> queryParams = new HashMap<String, Object>();
+            HashMap<String, Object> queryParams = new HashMap<>();
             SpotifyApi spotifyApi = new SpotifyApi();
 
             // The top tracks call to Spotify requires the 2-character country code.
@@ -200,14 +206,9 @@ public class Top10TracksFragment extends Fragment {
                 tracks = spotify.getArtistTopTrack(spotifyId, queryParams);
             } catch (RetrofitError e) {
                 Log.e(TAG, e.getLocalizedMessage());
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getActivity(),
-                                getActivity().getResources().getString(R.string.network_problem_detected),
-                                Toast.LENGTH_SHORT);
-                    }
-                });
+                getActivity().runOnUiThread(() -> Toast.makeText(getActivity(),
+                        getActivity().getResources().getString(R.string.network_problem_detected),
+                        Toast.LENGTH_SHORT));
             }
             return tracks;
         }
