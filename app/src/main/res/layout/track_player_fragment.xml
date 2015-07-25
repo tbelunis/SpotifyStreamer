@@ -30,10 +30,11 @@
 
     <TextView
         android:id="@+id/track_track_title"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/track_image"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="15dp"/>
 
     <SeekBar
         android:id="@+id/track_player_seek_bar"
@@ -77,6 +78,21 @@
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:contentDescription="@string/play_button_content_description"/>
+
+    <ImageButton
+        android:id="@+id/track_button_pause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_pause_black_48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@id/track_button_play"
+        android:layout_alignTop="@id/track_button_play"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:contentDescription="@string/track_pause_button"
+        android:visibility="invisible"/>
 
     <ImageButton
         android:id="@+id/track_button_next"

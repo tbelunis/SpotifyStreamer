@@ -39,7 +39,7 @@ public class Top10TracksFragment extends Fragment {
     private static final int WIDTH_IN_PIXELS_FOR_PLAYER = 640;
     private final String TAG = this.getClass().getSimpleName();
     private Top10TracksAdapter mAdapter;
-    private ArrayList<Top10TracksResult> mResults = new ArrayList<>();
+    private ArrayList<Top10TracksResult> mResults = new ArrayList<Top10TracksResult>();
     private String mSpotifyId;
     private String mArtistName;
 
@@ -194,7 +194,7 @@ public class Top10TracksFragment extends Fragment {
         protected Tracks doInBackground(String... params) {
             String spotifyId = params[0];
             Log.d(TAG, "Retrieving tracks for " + spotifyId);
-            HashMap<String, Object> queryParams = new HashMap<>();
+            HashMap<String, Object> queryParams = new HashMap<String, Object>();
             SpotifyApi spotifyApi = new SpotifyApi();
 
             // The top tracks call to Spotify requires the 2-character country code.
@@ -206,9 +206,14 @@ public class Top10TracksFragment extends Fragment {
                 tracks = spotify.getArtistTopTrack(spotifyId, queryParams);
             } catch (RetrofitError e) {
                 Log.e(TAG, e.getLocalizedMessage());
-                getActivity().runOnUiThread(() -> Toast.makeText(getActivity(),
-                        getActivity().getResources().getString(R.string.network_problem_detected),
-                        Toast.LENGTH_SHORT));
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(),
+                                getActivity().getResources().getString(R.string.network_problem_detected),
+                                Toast.LENGTH_SHORT);
+                    }
+                });
             }
             return tracks;
         }
