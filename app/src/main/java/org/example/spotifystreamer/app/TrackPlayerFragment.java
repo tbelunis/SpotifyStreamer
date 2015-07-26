@@ -37,6 +37,12 @@ public class TrackPlayerFragment extends DialogFragment implements View.OnClickL
     private Intent mPlayerIntent;
     private boolean mIsPlayerBound = false;
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -75,6 +81,15 @@ public class TrackPlayerFragment extends DialogFragment implements View.OnClickL
         }
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mIsPlayerBound) {
+            getActivity().unbindService(playerConnection);
+            mIsPlayerBound = false;
+        }
+    }
+
     private ServiceConnection playerConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -91,12 +106,31 @@ public class TrackPlayerFragment extends DialogFragment implements View.OnClickL
     };
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(Constants.TRACKS, mTracks);
+        outState.putInt(Constants.TRACK_TO_PLAY, mCurrentPosition);
+        outState.putBoolean("PLAYER_BOUND", mIsPlayerBound);
+    }
+
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) {
+            mTracks = savedInstanceState.getParcelableArrayList(Constants.TRACKS);
+            mCurrentPosition = savedInstanceState.getInt(Constants.TRACK_TO_PLAY);
+            mIsPlayerBound = savedInstanceState.getBoolean("PLAYER_BOUND");
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.track_button_play:
                 playTrack();
                 break;
             case R.id.track_button_pause:
+                pauseTrack();
                 break;
             case R.id.track_button_prev:
                 moveToPreviousTrack();
@@ -111,6 +145,8 @@ public class TrackPlayerFragment extends DialogFragment implements View.OnClickL
         if (mCurrentPosition > 0) {
             mCurrentPosition--;
             setView();
+            mIsPlaying = false;
+            playTrack();
         }
     }
 
@@ -118,25 +154,27 @@ public class TrackPlayerFragment extends DialogFragment implements View.OnClickL
         if (mCurrentPosition < mTracks.size()) {
             mCurrentPosition++;
             setView();
+            mIsPlaying = false;
+            playTrack();
         }
     }
 
     private void playTrack() {
-//        if (mPlayerIntent == null) {
-//            mPlayerIntent = new Intent(getActivity(), TrackPreviewService.class);
-//            mPlayerIntent.putExtra(Constants.TRACK_TO_PLAY, mCurrentPosition);
-//            mPlayerIntent.putParcelableArrayListExtra(Constants.TRACKS, mTracks);
-//            getActivity().startService(mPlayerIntent);
-//            mTrackPreviewService.playSong(mTracks.get(mCurrentPosition).getPreviewUrl());
-//        }
         Log.d(TAG, "playTrack");
-        mTrackPreviewService.playSong(mTracks.get(mCurrentPosition).getPreviewUrl());
-        //mPlayButton.setVisibility(View.INVISIBLE);
-
+        if (mIsPlaying) {
+            mTrackPreviewService.resumePlaying();
+        } else {
+            mTrackPreviewService.playSong(mTracks.get(mCurrentPosition).getPreviewUrl());
+            mPlayButton.setVisibility(View.INVISIBLE);
+            mPauseButton.setVisibility(View.VISIBLE);
+            mIsPlaying = true;
+        }
     }
 
     private void pauseTrack() {
-
+        mTrackPreviewService.pauseSong();
+        mPauseButton.setVisibility(View.INVISIBLE);
+        mPlayButton.setVisibility(View.VISIBLE);
     }
 
     private void setView() {

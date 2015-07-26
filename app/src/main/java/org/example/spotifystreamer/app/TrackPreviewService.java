@@ -60,7 +60,14 @@ public class TrackPreviewService extends Service implements
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    public void pauseSong() {
+        mMediaPlayer.pause();
+    }
+
+    public void resumePlaying() {
+        mMediaPlayer.start();
     }
 
     @Override
@@ -74,9 +81,16 @@ public class TrackPreviewService extends Service implements
     @Override
     public boolean onUnbind(Intent intent) {
         mMediaPlayer.stop();
-        mMediaPlayer.release();
+//        mMediaPlayer.release();
         mWakeLock.release();
         return false;
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "Track Preview Service onDestroy");
+        super.onDestroy();
+        mMediaPlayer.release();
     }
 
     @Override
